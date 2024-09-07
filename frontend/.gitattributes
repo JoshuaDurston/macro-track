@@ -1,0 +1,2 @@
+# Handle line endings automatically for text files
+* text=auto
