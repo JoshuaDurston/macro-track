@@ -1,13 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../../contexts/AuthContext';
 
 const LoginPage = () => {
-    const [formData, setFormData] = useState({
-        username: '',
-        password: ''
-    });
-
+    const [formData, setFormData] = useState({ username: '', password: '' });
     const [error, setError] = useState('');
+    const { login } = useContext(AuthContext);
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -19,37 +17,25 @@ const LoginPage = () => {
         try {
             const response = await fetch('/api/users/login', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData),
             });
 
             if (!response.ok) {
                 const errorData = await response.json();
-                console.error('Login failed:', errorData);
                 setError(errorData.message || 'Login failed. Please try again.');
                 return;
             }
 
             const data = await response.json();
 
-            if (data.token) { // Check if login was successful and token is returned
-                console.log('Login successful:', data);
-
-                // Log the token to the console
-                console.log('JWT Token:', data.token);
-
-                // Store the JWT token in localStorage
-                localStorage.setItem('token', data.token);
-
-                // Redirect user to diary page
+            if (data.token) {
+                login(data.token, data.user); // Call login from AuthContext
                 navigate('/diary');
             } else {
                 setError('Login failed. Please try again.');
             }
         } catch (error) {
-            console.error('Error logging in:', error);
             setError('An unexpected error occurred. Please try again later.');
         }
     };

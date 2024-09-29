@@ -1,0 +1,25 @@
+.navbar {
+    background-color: #5b5b69; /* Example header color */
+    padding: 10px;
+    display: flex;
+    justify-content: space-between; /* Space between the two lists */
+    align-items: center; /* Center items vertically */
+}
+
+.nav-links, .auth-links {
+    list-style: none;
+    display: flex;
+}
+
+.nav-links li, .auth-links li {
+    margin-right: 15px;
+}
+
+.navbar a {
+    color: white; /* Example link color */
+    text-decoration: none;
+}
+
+.navbar a:hover {
+    text-decoration: underline; /* Example hover effect */
+}
