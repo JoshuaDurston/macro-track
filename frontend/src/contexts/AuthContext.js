@@ -4,16 +4,17 @@ export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [user, setUser] = useState(null);
+    const [user, setUser] = useState(() => {
+        const userData = localStorage.getItem('user');
+        return userData ? JSON.parse(userData) : null; // Initialize from localStorage
+    });
 
     useEffect(() => {
         const token = localStorage.getItem('token');
-        const userData = localStorage.getItem('user');
-        if (token && userData) {
+        if (token && user) {
             setIsLoggedIn(true);
-            setUser(JSON.parse(userData)); // Assuming userData is stored as a stringified object
         }
-    }, []);
+    }, [user]); // Ensure that isLoggedIn updates when user data is set
 
     const login = (token, userData) => {
         localStorage.setItem('token', token);

@@ -4,11 +4,15 @@ const cors = require('cors');
 const verifyToken = require('./middleware/auth');
 
 const foodRoutes = require('./routes/foodRoutes');
-const userRoutes = require('./routes/userRoutes'); // Add your user routes here
+const userRoutes = require('./routes/userRoutes');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// Serve static files from the 'frontend/public' directory
+app.use('/public', express.static('frontend/public'));
+app.use('/uploads', express.static('uploads'));
 
 // Middleware
 app.use(cors());

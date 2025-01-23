@@ -5,6 +5,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const secretKey = process.env.JWT_SECRET || 'funnySecretKey';
 
+//POSTS
 // Signup route
 router.post('/signup', async (req, res) => {
     try {
@@ -66,5 +67,40 @@ router.post('/login', async (req, res) => {
         res.status(500).json({ message: 'Error logging in user', error });
     }
 });
+
+//Bio Route
+router.post('/:id/bio', async (req, res) => {
+    const { bio } = req.body;
+    try {
+        const user = await User.findById(req.params.id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        user.bio = bio;
+        await user.save();
+        res.status(200).json({ message: 'Bio updated successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to update bio', error });
+    }
+});
+
+
+//GETS
+// Endpoint to get user profile
+router.get('/:id/profile', async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+        
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Return bio and profilePicture
+        res.json({ bio: user.bio || '', profilePicture: user.profilePicture || '/assets/Default_pfp.svg.png' });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
 
 module.exports = router;

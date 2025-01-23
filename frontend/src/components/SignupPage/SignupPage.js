@@ -43,8 +43,8 @@ const SignupPage = () => {
                 // Store the JWT token in localStorage
                 localStorage.setItem('token', data.token);
 
-                // Redirect user to diary page
-                navigate('/diary');
+                // Redirect user to profile page
+                navigate('/profile');
             } else {
                 // Handle cases where token is not present
                 setError('Signup failed. Please try again.'); // Display error if no token
