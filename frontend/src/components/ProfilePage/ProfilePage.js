@@ -1,20 +1,25 @@
-import React, { useContext, useState, useEffect } from 'react';
-import { AuthContext } from '../../contexts/AuthContext';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../contexts/AuthContext';
 import BioForm from '../BioForm/BioForm';
 import './ProfilePage.css';
 
 const ProfilePage = () => {
-    const { user } = useContext(AuthContext);  // Get user from context
+    const { user, loading: authLoading } = useAuth();  // Use the context directly
     const [bio, setBio] = useState('');
     const [profilePicture, setProfilePicture] = useState(''); // State for profile picture
     const [isEditingBio, setIsEditingBio] = useState(false);
+
     const [loading, setLoading] = useState(true); // For loading state
 
     useEffect(() => {
         if (user && user._id) {
             async function fetchUserData() {
                 try {
-                    const response = await fetch(`/api/users/${user._id}/profile`);
+                    const response = await fetch('/api/users/profile', {  // Use /profile endpoint to get the logged-in user's data
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`, // Include JWT token in the request header
+                        }
+                    });
                     const data = await response.json();
                     setBio(data.bio || '');
                     setProfilePicture(data.profilePicture); // Set the profile picture URL
@@ -25,6 +30,8 @@ const ProfilePage = () => {
                 }
             }
             fetchUserData();
+        } else {
+            setLoading(false);  // If no user, stop loading
         }
     }, [user]); // Run when user changes
 
@@ -35,9 +42,12 @@ const ProfilePage = () => {
         }
 
         try {
-            const response = await fetch(`http://localhost:5000/api/users/${user._id}/bio`, {
+            const response = await fetch(`http://localhost:5000/api/users/bio`, {  // Use the correct route for saving bio
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}` // Include JWT token in the request header
+                },
                 body: JSON.stringify({ bio: newBio }),
             });
 
@@ -52,8 +62,13 @@ const ProfilePage = () => {
         }
     };
 
-    if (loading) {
-        return <p>Loading profile...</p>; // Show loading state
+    // Handle loading states for both authentication and user profile data
+    if (authLoading || loading) {
+        return <p>Loading profile...</p>;
+    }
+
+    if (!user) {
+        return <p>You need to log in to view your profile.</p>;
     }
 
     return (

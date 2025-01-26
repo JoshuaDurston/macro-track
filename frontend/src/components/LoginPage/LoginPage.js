@@ -1,11 +1,11 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AuthContext } from '../../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 const LoginPage = () => {
     const [formData, setFormData] = useState({ username: '', password: '' });
     const [error, setError] = useState('');
-    const { login } = useContext(AuthContext);
+    const { login } = useAuth(); // Correct usage of the AuthContext
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -29,9 +29,12 @@ const LoginPage = () => {
 
             const data = await response.json();
 
-            if (data.token) {
-                login(data.token, data.user); // Call login from AuthContext
-                navigate('/diary');
+            if (data.token && data.user) {
+                // Log the token for debugging
+                console.log('Received Token:', data.token);
+
+                login(data.token, data.user); // Call login from AuthContext with token and user data
+                navigate('/diary');  // Redirect to diary page on successful login
             } else {
                 setError('Login failed. Please try again.');
             }

@@ -1,10 +1,9 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const verifyToken = require('./middleware/auth');
 
-const foodRoutes = require('./routes/foodRoutes');
-const userRoutes = require('./routes/userRoutes');
+const diaryRoutes = require('./routes/diaryRoutes'); // Import the diary routes
+const userRoutes = require('./routes/userRoutes'); // Import the user routes
 require('dotenv').config();
 
 const app = express();
@@ -19,7 +18,7 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
-app.use('/api/foods', foodRoutes); // Food-related routes
+app.use('/api/diary', diaryRoutes); // Diary-related routes
 app.use('/api/users', userRoutes); // User-related routes
 
 // Basic route
@@ -38,5 +37,5 @@ mongoose.connect(process.env.MONGO_URI)
 
 // Start the server
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`Server is running on http://localhost:${PORT}`);
 });

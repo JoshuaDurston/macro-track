@@ -23,3 +23,7 @@
 .navbar a:hover {
     text-decoration: underline; /* Example hover effect */
 }
+
+.auth-links li:first-child {
+    color: white; /* Set the Welcome message text color to white */
+}

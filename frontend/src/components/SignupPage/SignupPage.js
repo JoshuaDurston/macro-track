@@ -8,6 +8,7 @@ const SignupPage = () => {
     });
 
     const [error, setError] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -37,17 +38,18 @@ const SignupPage = () => {
             // Parse response data
             const data = await response.json();
 
-            if (data.token) { // Check if the response contains a token
+            // If the response doesn't contain a token, we assume it's a successful signup
+            if (data.message) {
                 console.log('Signup successful:', data);
+                setSuccessMessage(data.message); // Show success message
+                setError(''); // Clear any previous error
 
-                // Store the JWT token in localStorage
-                localStorage.setItem('token', data.token);
-
-                // Redirect user to profile page
-                navigate('/profile');
+                // Redirect user to login page after a short delay
+                setTimeout(() => {
+                    navigate('/login');
+                }, 2000); // Delay to show the success message before redirect
             } else {
-                // Handle cases where token is not present
-                setError('Signup failed. Please try again.'); // Display error if no token
+                setError('Signup failed. Please try again.');
             }
         } catch (error) {
             console.error('Error signing up:', error);
@@ -84,6 +86,7 @@ const SignupPage = () => {
                 <button type="submit">Sign Up</button>
             </form>
             {error && <p style={{ color: 'red' }}>{error}</p>}
+            {successMessage && <p style={{ color: 'green' }}>{successMessage}</p>}
         </div>
     );
 };
