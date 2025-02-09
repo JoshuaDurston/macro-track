@@ -1,127 +1,147 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import FoodSearchModal from "../FoodSearchModal/FoodSearchModal.js"; // Import modal component
+import "./DiaryPage.css";
 
 const DiaryPage = () => {
-    const [currentDate, setCurrentDate] = useState(new Date()); // Default to today's date
-    const [kj, setKj] = useState(''); // Track the kilojoule input
-    const [loading, setLoading] = useState(false);
-    const navigate = useNavigate();
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [diaryData, setDiaryData] = useState({
+    breakfast: [],
+    lunch: [],
+    dinner: [],
+    snacks: [],
+  });
+  const [loading, setLoading] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false); // Controls modal visibility
+  const [activeSection, setActiveSection] = useState(""); // Tracks which section user is adding food to
+  const navigate = useNavigate();
 
-    // Format the date for display and server (YYYY-MM-DD)
-    const formatDate = (date) => date.toISOString().split('T')[0];
+  const formatDate = (date) => date.toISOString().split("T")[0];
 
-    // Fetch the kilojoule value for the current date when it changes
-    useEffect(() => {
-        async function fetchKjForDate() {
-            const token = localStorage.getItem('token'); // Retrieve the auth token
-            if (!token) {
-                alert('Please log in');
-                navigate('/login');
-                return;
-            }
+  useEffect(() => {
+    async function fetchDiaryData() {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("Please log in");
+        navigate("/login");
+        return;
+      }
 
-            setLoading(true);
-            try {
-                const response = await fetch(`/api/diary/${formatDate(currentDate)}`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`, // Pass the token in the request
-                    },
-                });
-
-                if (!response.ok) {
-                    if (response.status === 401) {
-                        alert('Session expired. Please log in again.');
-                        navigate('/login');
-                    } else {
-                        throw new Error('Failed to fetch kilojoule data');
-                    }
-                }
-
-                const data = await response.json();
-                setKj(data.kj || ''); // Set kj if available, or default to an empty string
-            } catch (error) {
-                console.error('Error fetching kilojoule data:', error);
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        fetchKjForDate();
-    }, [currentDate, navigate]);
-
-    // Handle saving the kilojoule value
-    const handleSaveKj = async () => {
-        const token = localStorage.getItem('token'); // Retrieve the auth token
-        if (!token) {
-            alert('Please log in');
-            navigate('/login');
-            return;
-        }
-
-        console.log('Token:', token); // Debugging line
-        try {
-            const response = await fetch(`/api/diary/${formatDate(currentDate)}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`, // Pass the token in the request
-                },
-                body: JSON.stringify({ kj }), // Send the kilojoule value
-            });
-
-            if (!response.ok) {
-                if (response.status === 401) {
-                    alert('Session expired. Please log in again.');
-                    navigate('/login');
-                    return;
-                }
-                throw new Error('Failed to save kilojoule data');
-            }
-
-            alert('Kilojoules saved!');
-        } catch (error) {
-            console.error('Error saving kilojoules:', error);
-            alert('Failed to save kilojoules');
-        }
-    };
-
-    // Handle date navigation (previous/next day)
-    const handleDateChange = (days) => {
-        setCurrentDate((prevDate) => {
-            const newDate = new Date(prevDate);
-            newDate.setDate(newDate.getDate() + days);
-            return newDate;
+      setLoading(true);
+      try {
+        const response = await fetch(`/api/diary/${formatDate(currentDate)}`, {
+          headers: { Authorization: `Bearer ${token}` },
         });
-    };
 
+        if (!response.ok) {
+          if (response.status === 401) {
+            alert("Session expired. Please log in again.");
+            navigate("/login");
+          } else {
+            throw new Error("Failed to fetch diary data");
+          }
+        }
+
+        const data = await response.json();
+        setDiaryData({
+          breakfast: data.breakfast || [],
+          lunch: data.lunch || [],
+          dinner: data.dinner || [],
+          snacks: data.snacks || [],
+        });
+      } catch (error) {
+        console.error("Error fetching diary data:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchDiaryData();
+  }, [currentDate, navigate]);
+
+  const handleDateChange = (days) => {
+    setCurrentDate((prevDate) => {
+      const newDate = new Date(prevDate);
+      newDate.setDate(newDate.getDate() + days);
+      return newDate;
+    });
+  };
+
+  const handleTrackFood = (section) => {
+    setActiveSection(section); // Store which section is being edited
+    setModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+  };
+
+  const calculateTotalKj = (section) =>
+    section.reduce((total, item) => total + item.kj, 0);
+
+  const calculateDailyTotal = () => {
     return (
-        <div>
-            <h1>Diary</h1>
-            <div>
-                <button onClick={() => handleDateChange(-1)} disabled={loading}>
-                    ⬅️ Previous Day
-                </button>
-                <span>{formatDate(currentDate)}</span>
-                <button onClick={() => handleDateChange(1)} disabled={loading}>
-                    Next Day ➡️
-                </button>
-            </div>
-            <div>
-                <label>
-                    Kilojoules:
-                    <input
-                        type="number"
-                        value={kj}
-                        onChange={(e) => setKj(e.target.value)}
-                        disabled={loading}
-                    />
-                </label>
-                <button onClick={handleSaveKj} disabled={loading || kj === ''}>
-                    Save
-                </button>
-            </div>
-        </div>
+      calculateTotalKj(diaryData.breakfast) +
+      calculateTotalKj(diaryData.lunch) +
+      calculateTotalKj(diaryData.dinner) +
+      calculateTotalKj(diaryData.snacks)
     );
+  };
+
+  return (
+    <div className="diary-container">
+      <h1 className="diary-header">Diary</h1>
+      <div className="date-navigation">
+        <button
+          onClick={() => handleDateChange(-1)}
+          disabled={loading}
+          className="date-button"
+        >
+          ⬅️ Previous Day
+        </button>
+        <span className="date-display">{formatDate(currentDate)}</span>
+        <button
+          onClick={() => handleDateChange(1)}
+          disabled={loading}
+          className="date-button"
+        >
+          Next Day ➡️
+        </button>
+      </div>
+      <h2 className="total-kj">
+        Total Kilojoules: {calculateDailyTotal()} kj
+      </h2>
+      {["breakfast", "lunch", "dinner", "snacks"].map((section) => (
+        <div key={section} className="diary-section">
+          <h3 className="section-header">
+            {section.charAt(0).toUpperCase() + section.slice(1)} (
+            {calculateTotalKj(diaryData[section])} kj)
+          </h3>
+          <button
+            onClick={() => handleTrackFood(section)}
+            className="track-food-button"
+          >
+            Track Food
+          </button>
+          <ul className="food-list">
+            {diaryData[section].map((item, index) => (
+              <li key={index} className="food-item">
+                {item.name} - {item.kj} kj
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+
+      {/* Food Search Modal */}
+      {modalOpen && (
+        <FoodSearchModal
+          section={activeSection}
+          onClose={handleCloseModal}
+        />
+      )}
+    </div>
+  );
 };
 
 export default DiaryPage;

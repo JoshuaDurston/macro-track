@@ -78,7 +78,7 @@ router.post('/bio', verifyToken, async (req, res) => {
     console.log('Updating bio for user:', req.user.username);
 
     try {
-        const user = await User.findById(req.user.id); // Use req.user.id from middleware
+        const user = await User.findById(req.user._id); // Use req.user.id from middleware
         if (!user) {
             console.log('User not found');
             return res.status(404).json({ message: 'User not found' });
@@ -100,7 +100,7 @@ router.get('/profile', verifyToken, async (req, res) => {
     console.log('Fetching profile for user:', req.user.username);
 
     try {
-        const user = await User.findById(req.user._id); // Correct field is _id
+        const user = await User.findById(req.user._id);
         if (!user) {
             console.log('User not found');
             return res.status(404).json({ message: 'User not found' });

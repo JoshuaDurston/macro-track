@@ -1,0 +1,101 @@
+/* Diary Page Styling */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f9f9f9;
+  }
+  
+  .diary-container {
+    max-width: 800px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .diary-header {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 20px;
+  }
+  
+  .date-navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .date-button {
+    background-color: #007bff;
+    color: #ffffff;
+    border: none;
+    padding: 10px 15px;
+    font-size: 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .date-button:hover {
+    background-color: #0056b3;
+  }
+  
+  .date-display {
+    font-size: 1.2rem;
+    font-weight: bold;
+  }
+  
+  .total-kj {
+    text-align: center;
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+  }
+  
+  .diary-section {
+    margin-bottom: 30px;
+    padding: 20px;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .section-header {
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+  }
+  
+  .track-food-button {
+    background-color: #28a745;
+    color: #ffffff;
+    border: none;
+    padding: 8px 12px;
+    font-size: 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-bottom: 10px;
+  }
+  
+  .track-food-button:hover {
+    background-color: #218838;
+  }
+  
+  .food-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .food-item {
+    font-size: 1rem;
+    padding: 5px 0;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .food-item:last-child {
+    border-bottom: none;
+  }
+  

@@ -6,7 +6,7 @@ const verifyToken = require('../middleware/auth'); // Updated to match the corre
 // GET /api/diary/:date - Retrieve kj for a specific date
 router.get('/:date', verifyToken, async (req, res) => {
     const { date } = req.params;
-    const userId = req.user.id; // Extract user ID from the token (verified by verifyToken)
+    const userId = req.user._id; // Extract user ID from the token (verified by verifyToken)
     try {
         const entry = await DiaryEntry.findOne({ userId, date });
         res.json(entry || { date, kj: null });
@@ -22,7 +22,7 @@ router.post('/:date', verifyToken, async (req, res) => {
 
     const { date } = req.params;
     const { kj } = req.body;
-    const userId = req.user.id; // Extract user ID from the token (verified by verifyToken)
+    const userId = req.user._id; // Extract user ID from the token (verified by verifyToken)
 
     if (isNaN(kj) || kj < 0) {
         return res.status(400).json({ error: 'Invalid kilojoule value' });

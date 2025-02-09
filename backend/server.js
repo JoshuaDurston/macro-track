@@ -4,6 +4,7 @@ const cors = require('cors');
 
 const diaryRoutes = require('./routes/diaryRoutes'); // Import the diary routes
 const userRoutes = require('./routes/userRoutes'); // Import the user routes
+const foodRoutes = require("./routes/foodRoutes");
 require('dotenv').config();
 
 const app = express();
@@ -20,6 +21,7 @@ app.use(express.json());
 // Routes
 app.use('/api/diary', diaryRoutes); // Diary-related routes
 app.use('/api/users', userRoutes); // User-related routes
+app.use("/api/food", foodRoutes);
 
 // Basic route
 app.get('/', (req, res) => {
