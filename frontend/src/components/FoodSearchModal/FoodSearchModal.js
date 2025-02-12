@@ -55,10 +55,14 @@ const FoodSearchModal = ({ onClose }) => {
                 {error && <p className="error-text">{error}</p>}
 
                 <div className="search-results">
-                    {searchResults.length > 0 ? (
+                {searchResults.length > 0 ? (
                         <ul>
                             {searchResults.map((food) => (
-                                <li key={food.fdcId}>{food.description}</li>
+                                <li key={food.fdcId}>
+                                    <strong>{food.name}</strong> <br />
+                                    <span>Kilojoules: {food.kj}</span> <br />
+                                    <span>Serving Size: {food.servingSize}</span>
+                                </li>
                             ))}
                         </ul>
                     ) : (
