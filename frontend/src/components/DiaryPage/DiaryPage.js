@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import FoodSearchModal from "../FoodSearchModal/FoodSearchModal.js"; // Import modal component
+import FoodSearchModal from "../FoodSearchModal/FoodSearchModal.js";
 import "./DiaryPage.css";
 
 const DiaryPage = () => {
@@ -12,8 +12,8 @@ const DiaryPage = () => {
     snacks: [],
   });
   const [loading, setLoading] = useState(false);
-  const [modalOpen, setModalOpen] = useState(false); // Controls modal visibility
-  const [activeSection, setActiveSection] = useState(""); // Tracks which section user is adding food to
+  const [modalOpen, setModalOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState("");
   const navigate = useNavigate();
 
   const formatDate = (date) => date.toISOString().split("T")[0];
@@ -68,11 +68,19 @@ const DiaryPage = () => {
   };
 
   const handleTrackFood = (section) => {
-    setActiveSection(section); // Store which section is being edited
+    setActiveSection(section);
     setModalOpen(true);
   };
 
   const handleCloseModal = () => {
+    setModalOpen(false);
+  };
+
+  const handleAddFood = (section, food) => {
+    setDiaryData((prevData) => ({
+      ...prevData,
+      [section]: [...prevData[section], food],
+    }));
     setModalOpen(false);
   };
 
@@ -92,19 +100,11 @@ const DiaryPage = () => {
     <div className="diary-container">
       <h1 className="diary-header">Diary</h1>
       <div className="date-navigation">
-        <button
-          onClick={() => handleDateChange(-1)}
-          disabled={loading}
-          className="date-button"
-        >
+        <button onClick={() => handleDateChange(-1)} disabled={loading} className="date-button">
           ⬅️ Previous Day
         </button>
         <span className="date-display">{formatDate(currentDate)}</span>
-        <button
-          onClick={() => handleDateChange(1)}
-          disabled={loading}
-          className="date-button"
-        >
+        <button onClick={() => handleDateChange(1)} disabled={loading} className="date-button">
           Next Day ➡️
         </button>
       </div>
@@ -114,13 +114,9 @@ const DiaryPage = () => {
       {["breakfast", "lunch", "dinner", "snacks"].map((section) => (
         <div key={section} className="diary-section">
           <h3 className="section-header">
-            {section.charAt(0).toUpperCase() + section.slice(1)} (
-            {calculateTotalKj(diaryData[section])} kj)
+            {section.charAt(0).toUpperCase() + section.slice(1)} ({calculateTotalKj(diaryData[section])} kj)
           </h3>
-          <button
-            onClick={() => handleTrackFood(section)}
-            className="track-food-button"
-          >
+          <button onClick={() => handleTrackFood(section)} className="track-food-button">
             Track Food
           </button>
           <ul className="food-list">
@@ -133,13 +129,7 @@ const DiaryPage = () => {
         </div>
       ))}
 
-      {/* Food Search Modal */}
-      {modalOpen && (
-        <FoodSearchModal
-          section={activeSection}
-          onClose={handleCloseModal}
-        />
-      )}
+      {modalOpen && <FoodSearchModal section={activeSection} onClose={handleCloseModal} onAddFood={handleAddFood} />}
     </div>
   );
 };

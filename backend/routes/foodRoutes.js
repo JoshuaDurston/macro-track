@@ -7,19 +7,19 @@ require("dotenv").config();
 const router = express.Router();
 
 /**
- * 🍏 USDA Food Search Proxy
+ * USDA Food Search Proxy
  * GET /api/food/search?query=apple
  */
 router.get("/search", async (req, res) => {
-    const { query } = req.query;
+    const query = req.query.query?.toLowerCase() || ""; // Normalize query for comparison
     if (!query) return res.status(400).json({ error: "Missing search query" });
 
     try {
         const apiParams = {
             query,
             api_key: process.env.USDA_API_KEY,
-            dataType: "SR Legacy,Foundation,Branded", // Order matters! Prioritize SR Legacy
-            pageSize: 15, // Get more results before filtering
+            dataType: "SR Legacy,Foundation,Branded",
+            pageSize: 15,
         };
 
         const response = await axios.get(
@@ -31,40 +31,56 @@ router.get("/search", async (req, res) => {
             return res.status(404).json({ error: "No results found" });
         }
 
-        // Extract relevant food data
         let formattedResults = response.data.foods.map((food) => {
-            const kjNutrient = food.foodNutrients.find(
-                (nutrient) => nutrient.nutrientName === "Energy" && nutrient.unitName === "kJ"
-            );
+            const isBranded = food.dataType === "Branded";
+
+            // Extract nutrients
+            const getNutrient = (nutrientName) => {
+                const nutrient = food.foodNutrients.find(n => n.nutrientName === nutrientName);
+                return nutrient ? nutrient.value : null;
+            };
+
+            let kjValue = getNutrient("Energy");
+
+            if (isBranded && (!kjValue || kjValue < 100)) {
+                const kcal = getNutrient("Energy (Atwater General Factors)") || getNutrient("Energy (kcal)");
+                if (kcal) {
+                    kjValue = kcal * 4.184; // Convert kcal to kJ
+                }
+            }
 
             return {
                 fdcId: food.fdcId,
-                name: food.description.toLowerCase(), // Normalize case for sorting
-                kj: kjNutrient ? kjNutrient.value : null,
-                servingSize: food.servingSize || "N/A",
+                name: food.description.toLowerCase(),
+                kj: kjValue ? Math.round(kjValue) : null,
+                protein: getNutrient("Protein"),
+                carbs: getNutrient("Carbohydrate, by difference"),
+                fat: getNutrient("Total lipid (fat)"),
+                servingSize: isBranded ? food.servingSize || "N/A" : 100,
+                servingUnit: isBranded ? food.servingSizeUnit || "g" : "g",
+                isBranded,
             };
         });
 
-        // Prioritize whole foods (remove "cake", "cracker", etc.)
-        formattedResults = formattedResults
-            .filter((food) => food.kj !== null || food.name.includes("rice")) // Keep rice even if no kj
-            .sort((a, b) => {
-                // Prefer plain "rice" over "rice cakes/crackers"
-                const aIsWholeRice = a.name.includes("rice") && !a.name.includes("cake") && !a.name.includes("cracker");
-                const bIsWholeRice = b.name.includes("rice") && !b.name.includes("cake") && !b.name.includes("cracker");
+        // **Dynamic prioritization based on query**
+        formattedResults.sort((a, b) => {
+            const aExactMatch = a.name === query;
+            const bExactMatch = b.name === query;
+            const aStartsWith = a.name.startsWith(query);
+            const bStartsWith = b.name.startsWith(query);
 
-                if (aIsWholeRice && !bIsWholeRice) return -1;
-                if (!aIsWholeRice && bIsWholeRice) return 1;
-                return 0; // Otherwise, keep original USDA ranking
-            })
-            .slice(0, 7); // Reduce list to 7 results max
+            if (aExactMatch && !bExactMatch) return -1;
+            if (!aExactMatch && bExactMatch) return 1;
+            if (aStartsWith && !bStartsWith) return -1;
+            if (!aStartsWith && bStartsWith) return 1;
 
-        res.json({ foods: formattedResults });
+            return 0; // Keep USDA ranking otherwise
+        });
+
+        res.json({ foods: formattedResults.slice(0, 7) });
+
     } catch (error) {
         console.error("USDA API error:", error.response?.data || error.message);
-        if (error.response) {
-            return res.status(error.response.status).json({ error: error.response.data });
-        }
         res.status(500).json({ error: "Failed to fetch food data" });
     }
 });
@@ -72,7 +88,7 @@ router.get("/search", async (req, res) => {
 
 
 /**
- * 🥗 Save a User-Created Food Item
+ * Save a User-Created Food Item
  * POST /api/food
  */
 router.post("/", verifyToken, async (req, res) => {
@@ -94,7 +110,7 @@ router.post("/", verifyToken, async (req, res) => {
 });
 
 /**
- * 🍛 Fetch User-Created Food Items
+ * Fetch User-Created Food Items
  * GET /api/food/user
  */
 // router.get("/user", verifyToken, async (req, res) => {
