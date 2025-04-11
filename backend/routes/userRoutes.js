@@ -95,6 +95,29 @@ router.post('/bio', verifyToken, async (req, res) => {
     }
 });
 
+// POST: User weight (user-specific)
+router.post('/weight', verifyToken, async (req, res) => {
+    const { weight } = req.body;
+    console.log('Updating weight for user:', req.user.username);
+
+    try {
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            console.log('User not found');
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        user.weight = weight;
+        await user.save();
+        console.log(`Weight updated successfully for user ${user.username}: ${weight}kg`);
+
+        res.status(200).json({ message: 'Weight updated successfully', weight: user.weight });
+    } catch (error) {
+        console.error('Failed to update weight:', error);
+        res.status(500).json({ message: 'Failed to update weight', error: error.message });
+    }
+});
+
 // GET: User profile (user-specific)
 router.get('/profile', verifyToken, async (req, res) => {
     console.log('Fetching profile for user:', req.user.username);
@@ -112,6 +135,7 @@ router.get('/profile', verifyToken, async (req, res) => {
         res.json({
             bio: user.bio || '',
             profilePicture: user.profilePicture || '/assets/Default_pfp.svg.png',
+            weight: user.weight || ''
         });
     } catch (error) {
         console.error('Server error while fetching profile:', error);

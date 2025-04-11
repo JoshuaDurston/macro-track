@@ -8,6 +8,9 @@ const ProfilePage = () => {
     const [bio, setBio] = useState('');
     const [profilePicture, setProfilePicture] = useState(''); // State for profile picture
     const [isEditingBio, setIsEditingBio] = useState(false);
+    const [weight, setWeight] = useState('');
+    const [newWeight, setNewWeight] = useState('');
+
 
     const [loading, setLoading] = useState(true); // For loading state
 
@@ -23,6 +26,7 @@ const ProfilePage = () => {
                     const data = await response.json();
                     setBio(data.bio || '');
                     setProfilePicture(data.profilePicture); // Set the profile picture URL
+                    setWeight(data.weight); 
                 } catch (error) {
                     console.error('Failed to fetch user data', error);
                 } finally {
@@ -62,6 +66,37 @@ const ProfilePage = () => {
         }
     };
 
+    const updateWeight = async () => {
+        if (!user || !user._id) {
+            console.error('User ID is missing');
+            return;
+        }
+    
+        // Round to 1 decimal place
+        const roundedWeight = parseFloat(newWeight).toFixed(1);
+    
+        try {
+            const response = await fetch('http://localhost:5000/api/users/weight', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ weight: roundedWeight })
+            });
+    
+            if (response.ok) {
+                const data = await response.json();
+                setWeight(data.weight);
+                setNewWeight('');
+            } else {
+                console.error('Failed to update weight');
+            }
+        } catch (error) {
+            console.error('Error updating weight:', error);
+        }
+    };
+
     // Handle loading states for both authentication and user profile data
     if (authLoading || loading) {
         return <p>Loading profile...</p>;
@@ -88,6 +123,35 @@ const ProfilePage = () => {
                 <div className="bio-section">
                     <p className="bio">
                         {bio || "This user hasn't written a bio yet."}
+                    </p>
+                    <button
+                        className="edit-bio-button"
+                        onClick={() => setIsEditingBio(true)}
+                    >
+                        ✏️
+                    </button>
+                </div>
+                <div className="calculator-section">
+                    <p className="weight">
+                        Current Weight: {weight || "No Weight Recorded"} kg <br/>
+                        <label htmlFor="weight">
+                            Enter your weight(kg):
+                        </label>
+                        <input 
+                            type="double" 
+                            id="weight" 
+                            name="weight" 
+                            min="1"
+                            value={newWeight}
+                            onChange={(e) => setNewWeight(e.target.value)}
+                        />
+                        <button
+                            className="update-weight-button"
+                            onClick={() => updateWeight()}
+                            disabled={!newWeight.trim()}
+                        >
+                                Confirm
+                        </button>
                     </p>
                     <button
                         className="edit-bio-button"
