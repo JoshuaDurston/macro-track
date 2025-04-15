@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import BioForm from '../BioForm/BioForm';
+import CalculatorModal from '../CalculatorModal/CalculatorModal';
 import './ProfilePage.css';
 
 const ProfilePage = () => {
@@ -10,6 +11,7 @@ const ProfilePage = () => {
     const [isEditingBio, setIsEditingBio] = useState(false);
     const [weight, setWeight] = useState('');
     const [newWeight, setNewWeight] = useState('');
+    const [modalOpen, setModalOpen] = useState(false);
 
 
     const [loading, setLoading] = useState(true); // For loading state
@@ -97,6 +99,10 @@ const ProfilePage = () => {
         }
     };
 
+    const handleCalculator = () => {
+        setModalOpen(true);
+      };
+
     // Handle loading states for both authentication and user profile data
     if (authLoading || loading) {
         return <p>Loading profile...</p>;
@@ -153,12 +159,20 @@ const ProfilePage = () => {
                                 Confirm
                         </button>
                     </p>
-                    <button
-                        className="edit-bio-button"
-                        onClick={() => setIsEditingBio(true)}
-                    >
-                        ✏️
-                    </button>
+
+                    <p className="calculator">
+                        <label htmlFor="calculator">
+                            Calculate Your Required Daily Intake:
+                        </label>
+                        <br/>
+                        <button
+                            className="calculator-button"
+                            id="calculator"
+                            onClick={() => handleCalculator()}
+                        >
+                                Calculator
+                        </button>
+                    </p>
                 </div>
             </div>
 
@@ -167,6 +181,13 @@ const ProfilePage = () => {
                     initialBio={bio}
                     onSave={handleBioSave}
                     onCancel={() => setIsEditingBio(false)}
+                />
+            )}
+
+            {modalOpen && (
+                <CalculatorModal
+                    weight={weight}
+                    onClose={() => setModalOpen(false)}
                 />
             )}
         </div>
